@@ -1,0 +1,67 @@
+5When is this due?
+    11/25/18 at 11:59pm
+
+What needs to be done?
+    copy your PA4 code
+    
+    make up 3 versions of your PA4 
+        "PA6 FIFO" version
+        "PA6 MQ" version (message queue), no files need to be created inside the channel
+        "PA6 SHM" shared memory version
+
+    You should have an abstract RequestChannel class and 3 sub-classes:
+        sub-classes or children classes???
+        • FIFORequestChannel 
+        • MQRequestChannel
+        • SHMRequestChannel
+        
+        the RequestChannel class should look like this
+            class RequestChannel { 
+                public:
+                    typedef enum {SERVER SIDE, CLIENT SIDE} Side ;
+                    typedef enum {READ MODE, WRITE MODE} Mode ;
+                    /* CONSTRUCTOR/DESTRUCTOR */
+                    RequestChannel (const string name , const Side side );  ̃RequestChannel ();
+                        
+                    virtual string cread ()=0;
+                    /* Blocking read of data from the channel. Returns a string of characters read from the channel. Returns NULL if read failed. */
+                    virtual int cwrite ( string msg)=0;
+                    /* Write the data to the channel. The function returns
+                    the number of characters written to the channel. */
+            };
+        
+        You will also need KernelSemaphore class for the SHMRequestChannel. 
+        This should look like the following:
+            class KernelSemaphore { 
+                private:
+                    /* INTERNAL DATA STRUCTURES */
+                    public :
+                    /* CONSTRUCTOR/DESTRUCTOR */
+                    KernelSemaphore ( int v a l ) ;
+                    ̃KernelSemaphore(); // make sure to remove all allocated resources
+                    void P(); /* Acquire Lock*/
+                    void V( ) ; /* Release Lock */ };
+            };
+        
+    Your program should accept a command line argument "-i" that can be one of 3 values:
+        • “f” for FIFO
+        • “q” for message queue
+        • “s” for shared memory
+        Your program should just switch the datatype and then run the same code for all 3 cases (use the RequestChannel methods) 
+        instead of having 3 giantic if statements with custom code for each cases
+
+    Still Needs to clean up all files
+
+    There should also be a report with 6 things:
+        • Gather timing data on the same set of n, b, w arguments on each of PA6 FIFO, PA6 MQ, and PA6 SHM.
+        • Present a performance comparison of the different IPC mechanisms based on this data, and attempt to provide explanation for any differences and similarities.
+        • Present the results in separate graphs using PA6 FIFO (i.e., PA4) as the baseline for comparison    
+        • What is the maximum w and thus the max number of RequestChannels that you can use for each IPC? How much more can you go beyond the limit in PA4? (recall that the limit imposed by how many file descriptors each user can have. Now that we are not using file descriptors for MQ or SHM, has that situation changed?)
+        • What are some of the limits encountered by each class, either due to the specific implementation or to operating system limitations, and how does the program behave when it encounters them?
+        • Describe the clean-up activity you have done for each IPC
+
+    Bonus worth 12 points
+        • Using only one MQ object for all the request channels: 4 pts
+        • Using only one shared memory segment for all request channels: 4 pts
+        • Using minimum number of temporary files (needed for calling ftok() function) for each request channel: 4 pts
+        
