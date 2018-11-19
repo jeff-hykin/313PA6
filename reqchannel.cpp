@@ -28,6 +28,9 @@ using namespace std;
 // 
 // Constructors
 // 
+    RequestChannel::RequestChannel()
+        {
+        }
     RequestChannel::RequestChannel(const std::string _name, const Side _side) : my_name(_name), my_side(_side), side_name((_side == RequestChannel::SERVER_SIDE) ? "SERVER" : "CLIENT")
         {
             // Summary:

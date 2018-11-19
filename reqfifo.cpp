@@ -1,5 +1,5 @@
 /* 
-    File: FifoRequestChannel.C
+    File: Fifo.C
 
     Author: R. Bettati
             Department of Computer Science
@@ -28,7 +28,7 @@ using namespace std;
 // 
 // Constructors
 // 
-    FifoRequestChannel::FifoRequestChannel(const std::string _name, const RequestChannel::Side _side) : my_name(_name), my_side(_side), side_name((_side == RequestChannel::SERVER_SIDE) ? "SERVER" : "CLIENT")
+    Fifo::Fifo(const std::string _name, const RequestChannel::Side _side) : my_name(_name), my_side(_side), side_name((_side == RequestChannel::SERVER_SIDE) ? "SERVER" : "CLIENT")
         {
             // Summary:
                 // /* Creates a "local copy" of the channel specified by the given name.
@@ -58,7 +58,7 @@ using namespace std;
                 }
         }
     
-    FifoRequestChannel::~FifoRequestChannel()
+    Fifo::~Fifo()
         {
             // Summary:
                 // /* Destructor of the local copy of the bus. By default, the Server RequestChannel::Side deletes any IPC 
@@ -72,7 +72,7 @@ using namespace std;
 // 
 // Methods
 // 
-    std::string FifoRequestChannel::pipe_name(RequestChannel::Mode _mode)
+    std::string Fifo::pipe_name(RequestChannel::Mode _mode)
         {
             std::string pname = "fifo_" + my_name;
 
@@ -93,12 +93,12 @@ using namespace std;
                 }
             return pname;
         }
-    void FifoRequestChannel::create_pipe(string _pipe_name)
+    void Fifo::create_pipe(string _pipe_name)
         {
             mkfifo(_pipe_name.c_str(), 0600) < 0;
         }
 
-    void FifoRequestChannel::open_write_pipe(string _pipe_name)
+    void Fifo::open_write_pipe(string _pipe_name)
         {
             create_pipe(_pipe_name);
             write_file_descriptor = open(_pipe_name.c_str(), O_WRONLY);
@@ -108,7 +108,7 @@ using namespace std;
                 }
         }
 
-    void FifoRequestChannel::open_read_pipe(string _pipe_name)
+    void Fifo::open_read_pipe(string _pipe_name)
         {
             create_pipe(_pipe_name);
             read_file_descriptor = open(_pipe_name.c_str(), O_RDONLY);
@@ -119,7 +119,7 @@ using namespace std;
                 }
         }
 
-    string FifoRequestChannel::cread()
+    string Fifo::cread()
         {
             // summary:
                 // /* Blocking read of data from the channel. Returns a string of characters
@@ -133,7 +133,7 @@ using namespace std;
             return s;
         }
 
-    void FifoRequestChannel::cwrite(string msg)
+    void Fifo::cwrite(string msg)
         {
             if(msg.size() > MAX_MESSAGE)
                 {
@@ -146,19 +146,19 @@ using namespace std;
                 }
         }
 
-    std::string FifoRequestChannel::name()
+    std::string Fifo::name()
         {
             /* Returns the name of the request channel. */
             return my_name;
         }
 
-    int FifoRequestChannel::read_fd()
+    int Fifo::read_fd()
         {
             /* Returns the file descriptor used to read from the channel. */
             return read_file_descriptor;
         }
 
-    int FifoRequestChannel::write_fd()
+    int Fifo::write_fd()
         {
             /* Returns the file descriptor used to write to the channel. */
             return write_file_descriptor;

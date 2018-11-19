@@ -31,6 +31,8 @@
 #include "CekoLibrary.h"
 using namespace std;
 
+#define CLIENT_SIDE RequestChannel::CLIENT_SIDE
+
 
 // 
 // Main
@@ -86,7 +88,7 @@ int main(int argc, char* argv[])
                     // 
                     // Init data structures
                     // 
-                        RequestChannel* control_channel = new RequestChannel("control", RequestChannel::CLIENT_SIDE);
+                        RequestChannel* control_channel = new RequestChannel("control", CLIENT_SIDE);
                         BoundedBuffer   request_buffer(capacity_of_the_request_buffer);
                         Histogram       histogram_of_tasks;
                         map<string, BoundedBuffer> stat_buffers;
@@ -159,7 +161,7 @@ int main(int argc, char* argv[])
                                     // create channel for worker
                                     control_channel->cwrite("newchannel");
                                     string          new_channel_name  = control_channel->cread();
-                                    RequestChannel* worker_channel    = new RequestChannel(new_channel_name, RequestChannel::CLIENT_SIDE);
+                                    RequestChannel* worker_channel    = new RequestChannel(new_channel_name, CLIENT_SIDE);
                                     // create worker
                                     auto worker_task = Task(workerFunction, worker_channel);
                                     worker_task.Start();

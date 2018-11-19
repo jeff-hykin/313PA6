@@ -11,7 +11,7 @@ What needs to be done?
 
     You should have an abstract RequestChannel class and 3 sub-classes:
         sub-classes or children classes???
-        • FIFORequestChannel 
+        • Fifo 
         • MQRequestChannel
         • SHMRequestChannel
         

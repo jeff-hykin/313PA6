@@ -33,15 +33,16 @@ class RequestChannel
             int write_file_descriptor;
             int read_file_descriptor;
         // methods
-            string pipe_name(Mode _mode);
-            void   create_pipe(string _pipe_name);
-            void   open_read_pipe(string _pipe_name);
-            void   open_write_pipe(string _pipe_name);
+            virtual string pipe_name(Mode _mode);
+            virtual void   create_pipe(string _pipe_name);
+            virtual void   open_read_pipe(string _pipe_name);
+            virtual void   open_write_pipe(string _pipe_name);
 
     public:
         // Constructors
+            RequestChannel();
             RequestChannel(const string _name, const Side _side);
-            ~RequestChannel();
+            virtual ~RequestChannel();
         // Methods
             string cread();
             void   cwrite(string _msg);

@@ -10,13 +10,13 @@
 using namespace std;
 
 
-class FifoRequestChannel
+class Fifo : public RequestChannel
     {
     private:
         // Data
             string my_name   = "";
             string side_name = "";
-            RequestChannel::Side   my_side;
+            RequestChannel::Side my_side;
             /*  The current implementation uses named pipes. */
             int write_file_descriptor;
             int read_file_descriptor;
@@ -28,8 +28,8 @@ class FifoRequestChannel
 
     public:
         // Constructors
-            FifoRequestChannel(const string _name, const RequestChannel::Side _side);
-            ~FifoRequestChannel();
+            Fifo(const string _name, const RequestChannel::Side _side);
+            ~Fifo();
         // Methods
             string cread();
             void   cwrite(string _msg);
