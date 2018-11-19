@@ -1,4 +1,5 @@
 #include "reqchannel.h"
+#include "reqfifo.h"
 #include <cassert>
 #include <cstring>
 #include <errno.h>
@@ -74,7 +75,7 @@ int main(int argc, char* argv[])
         char ipc_option = *argv[0];
         // fifo
         if (ipc_option == 'f') {
-            RequestChannel control_channel("control", RequestChannel::SERVER_SIDE);
+            Fifo control_channel("control", RequestChannel::SERVER_SIDE);
             handle_process_loop(&control_channel);
         // message queue
         } else if (ipc_option == 'q') {
