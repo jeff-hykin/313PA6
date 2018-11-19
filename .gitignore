@@ -1,6 +1,8 @@
 client
 dataserver
 *.dSYM
+settings.json
+.DS_Store
 
 # Prerequisites
 *.d
