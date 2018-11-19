@@ -70,6 +70,17 @@ void* handle_process_loop(void* _channel)
 int main(int argc, char* argv[])
     {
         newchannel_lock = PTHREAD_MUTEX_INITIALIZER;
-        RequestChannel control_channel("control", RequestChannel::SERVER_SIDE);
-        handle_process_loop(&control_channel);
+        // get the option from the client
+        char ipc_option = *argv[0];
+        // fifo
+        if (ipc_option == 'f') {
+            RequestChannel control_channel("control", RequestChannel::SERVER_SIDE);
+            handle_process_loop(&control_channel);
+        // message queue
+        } else if (ipc_option == 'q') {
+            cout << "FIXME, not yet implemented" << "\n";
+        // shared memory
+        } else if (ipc_option == 's') {
+            cout << "FIXME, not yet implemented" << "\n";
+        }
     }

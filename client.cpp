@@ -44,12 +44,13 @@ int main(int argc, char* argv[])
         // 
             int number_of_requests_per_person  = 100;                               // default number_of_requests_per_person
             int number_of_worker_threads       = 1;                                 // default number_of_worker threads
-            int capacity_of_the_request_buffer = 3 * number_of_requests_per_person; // default capacity_of_the_request_buffer, you should change this default
+            int capacity_of_the_request_buffer = 3 * number_of_requests_per_person; // default capacity_of_the_request_buffer
+            char ipc_option                    = 'f';                               // default inter process communication option
         // 
         // Get arguments
         // 
             int opt = 0;
-            while((opt = getopt(argc, argv, "n:w:b:")) != -1)
+            while((opt = getopt(argc, argv, "n:w:b:i:")) != -1)
                 {
                     switch(opt)
                         {
@@ -62,6 +63,9 @@ int main(int argc, char* argv[])
                             case 'b':
                                 capacity_of_the_request_buffer = atoi(optarg);
                                 break;
+                            case 'i':
+                                ipc_option = *optarg;
+                                break;
                         }
                 }
 
@@ -71,7 +75,7 @@ int main(int argc, char* argv[])
             int pid = fork();
             if(pid == 0)
                 {
-                    execl("dataserver", (char*)NULL);
+                    execl("dataserver", &ipc_option, (char*)NULL);
                 }
         // 
         // thread section
