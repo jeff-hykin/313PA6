@@ -89,6 +89,7 @@ int main(int argc, char* argv[])
                         cout << "n == " << number_of_requests_per_person << endl;
                         cout << "w == " << number_of_worker_threads << endl;
                         cout << "b == " << capacity_of_the_request_buffer << endl;
+                        cout << "i == " << ipc_option << endl;
 
                     // 
                     // Init data structures
