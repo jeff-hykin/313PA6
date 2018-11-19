@@ -93,7 +93,17 @@ int main(int argc, char* argv[])
                     // 
                     // Init data structures
                     // 
-                        Fifo* control_channel = new Fifo("control", CLIENT_SIDE);
+                        RequestChannel* control_channel = nullptr;
+                        // fifo
+                        if (ipc_option == 'f') {
+                            control_channel = new Fifo("control", CLIENT_SIDE);
+                        // message queue
+                        } else if (ipc_option == 'q') {
+                            cout << "FIXME, not yet implemented" << "\n";
+                        // shared memory
+                        } else if (ipc_option == 's') {
+                            cout << "FIXME, not yet implemented" << "\n";
+                        }
                         BoundedBuffer   request_buffer(capacity_of_the_request_buffer);
                         Histogram       histogram_of_tasks;
                         map<string, BoundedBuffer> stat_buffers;
@@ -108,7 +118,7 @@ int main(int argc, char* argv[])
                                     }
                                 return 0;
                             });
-                        auto workerFunction = function<int(Fifo*)>([&](Fifo* worker_channel)
+                        auto workerFunction = function<int(RequestChannel*)>([&](RequestChannel* worker_channel)
                             {
                                 // 
                                 // For each avalible request
@@ -160,13 +170,13 @@ int main(int argc, char* argv[])
                             auto jane_producer_task = Task(producerFunction, (string)("data Jane Smith")); jane_producer_task.Start();
                             auto joe_producer_task  = Task(producerFunction, (string)("data Joe Smith" )); joe_producer_task.Start();
                         // Workers
-                            vector<Task<int, Fifo*>> worker_tasks;
+                            vector<Task<int, RequestChannel*>> worker_tasks;
                             for (auto each : range(0, number_of_worker_threads))
                                 {
                                     // create channel for worker
                                     control_channel->cwrite("newchannel");
                                     string          new_channel_name  = control_channel->cread();
-                                    Fifo* worker_channel    = new Fifo(new_channel_name, CLIENT_SIDE);
+                                    RequestChannel* worker_channel    = new RequestChannel(new_channel_name, CLIENT_SIDE);
                                     // create worker
                                     auto worker_task = Task(workerFunction, worker_channel);
                                     worker_task.Start();
