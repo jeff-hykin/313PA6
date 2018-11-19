@@ -24,7 +24,7 @@ void process_newchannel(RequestChannel* _channel)
         pthread_t       thread_id;
         if(pthread_create(&thread_id, NULL, handle_process_loop, data_channel) < 0)
             {
-                EXITONERROR("");
+                cout << "Error creating thread in process_newchannel()" << "\n";
             }
     }
 

@@ -8,7 +8,6 @@
 #include <string>
 using namespace std;
 
-void EXITONERROR (string msg);
 
 class RequestChannel {
 
