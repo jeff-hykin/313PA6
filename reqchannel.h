@@ -44,10 +44,10 @@ class RequestChannel
             RequestChannel(const string _name, const Side _side);
             virtual ~RequestChannel();
         // Methods
-            string cread();
-            void   cwrite(string _msg);
-            string name();
-            int    read_fd();
-            int    write_fd();
+            virtual string cread();
+            virtual void   cwrite(string _msg);
+            virtual string name();
+            virtual int    read_fd();
+            virtual int    write_fd();
     };
 #endif
