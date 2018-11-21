@@ -49,16 +49,17 @@ using namespace std;
                 //  limits on the number of open files per process limit the number of established
                 //  request channels to 125.
                 // */
-            if(_side == SERVER_SIDE)
-                {
-                    open_write_pipe(pipe_name(WRITE_MODE).c_str());
-                    open_read_pipe(pipe_name(READ_MODE).c_str());
-                }
-            else
-                {
-                    open_read_pipe(pipe_name(READ_MODE).c_str());
-                    open_write_pipe(pipe_name(WRITE_MODE).c_str());
-                }
+            // if(_side == SERVER_SIDE)
+            //     {
+            //         open_write_pipe(pipe_name(WRITE_MODE).c_str());
+            //         open_read_pipe(pipe_name(READ_MODE).c_str());
+            //     }
+            // else
+            //     {
+            //         cout << "calling open_read_pipe" << "\n";
+            //         open_read_pipe(pipe_name(READ_MODE).c_str());
+            //         open_write_pipe(pipe_name(WRITE_MODE).c_str());
+            //     }
         }
     
     RequestChannel::~RequestChannel()
@@ -66,12 +67,12 @@ using namespace std;
             // Summary:
                 // /* Destructor of the local copy of the bus. By default, the Server Side deletes any IPC 
                 // mechanisms associated with the channel. */
-            close(write_file_descriptor);
-            close(read_file_descriptor);
-            //if (my_side == SERVER_SIDE) {
-            remove(pipe_name(READ_MODE).c_str());
-            remove(pipe_name(WRITE_MODE).c_str());
-            //}
+            // close(write_file_descriptor);
+            // close(read_file_descriptor);
+            // //if (my_side == SERVER_SIDE) {
+            // remove(pipe_name(READ_MODE).c_str());
+            // remove(pipe_name(WRITE_MODE).c_str());
+            // //}
         }
 
 // 
@@ -115,9 +116,9 @@ using namespace std;
 
     void RequestChannel::open_read_pipe(string _pipe_name)
         {
-            //if (my_side == SERVER_SIDE)
             create_pipe(_pipe_name);
             read_file_descriptor = open(_pipe_name.c_str(), O_RDONLY);
+            cout << "read_file_descriptor = " << (read_file_descriptor) << "\n";
             if(read_file_descriptor < 0)
                 {
                     perror("");
@@ -131,9 +132,12 @@ using namespace std;
                 // /* Blocking read of data from the channel. Returns a string of characters
                 // read from the channel. Returns NULL if read failed. */
             char buf[MAX_MESSAGE];
+            cout << "read_file_descriptor = " << (read_file_descriptor) << "\n";
+            cout << "buf = " << (buf) << "\n";
+            cout << "MAX_MESSAGE = " << (MAX_MESSAGE) << "\n";
             if(read(read_file_descriptor, buf, MAX_MESSAGE) <= 0)
                 {
-                    cerr << "Error in cread()" << "\n";
+                    cerr << "Error in RequestChannel cread()" << "\n";
                 }
             string s = buf;
             return s;

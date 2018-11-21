@@ -1,0 +1,19 @@
+n == 100
+w == 5
+b == 300
+i == f
+Init data structures
+getChannel: ipc_option = f
+creating Fifo
+Fifo constructor
+Fifo calling open_read_pipe
+read_file_descriptor = 3
+Start threads
+read_file_descriptor = 3
+buf = €€y	
+MAX_MESSAGE = 255
+getChannel: ipc_option = f
+creating Fifo
+Fifo constructor
+Fifo calling open_read_pipe
+read_file_descriptor = -1

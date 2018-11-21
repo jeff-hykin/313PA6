@@ -34,6 +34,22 @@ using namespace std;
 
 #define CLIENT_SIDE RequestChannel::CLIENT_SIDE
 
+RequestChannel* getChannel(char ipc_option, string name) 
+    {
+        cout << "getChannel: ipc_option = " << ipc_option << "\n";
+        // fifo
+        if (ipc_option == 'f') {
+            cout << "creating Fifo" << "\n";
+            return new Fifo(name, CLIENT_SIDE);
+        // message queue
+        } else if (ipc_option == 'q') {
+            cout << "FIXME, not yet implemented" << "\n";
+        // shared memory
+        } else if (ipc_option == 's') {
+            cout << "FIXME, not yet implemented" << "\n";
+        }
+        return nullptr;
+    }
 
 // 
 // Main
@@ -93,18 +109,9 @@ int main(int argc, char* argv[])
 
                     // 
                     // Init data structures
-                    // 
-                        RequestChannel* control_channel = nullptr;
-                        // fifo
-                        if (ipc_option == 'f') {
-                            control_channel = new Fifo("control", CLIENT_SIDE);
-                        // message queue
-                        } else if (ipc_option == 'q') {
-                            cout << "FIXME, not yet implemented" << "\n";
-                        // shared memory
-                        } else if (ipc_option == 's') {
-                            cout << "FIXME, not yet implemented" << "\n";
-                        }
+                    //
+                        cout << "Init data structures" << "\n";
+                        RequestChannel* control_channel = getChannel(ipc_option, "control");
                         BoundedBuffer   request_buffer(capacity_of_the_request_buffer);
                         Histogram       histogram_of_tasks;
                         map<string, BoundedBuffer> stat_buffers;
@@ -162,10 +169,10 @@ int main(int argc, char* argv[])
                                     }
                                 return 0;
                             });
-                    
                     //
                     // Start threads
                     //
+                        cout << "Start threads" << "\n";
                         // Producers
                             auto john_producer_task = Task(producerFunction, (string)("data John Smith")); john_producer_task.Start();
                             auto jane_producer_task = Task(producerFunction, (string)("data Jane Smith")); jane_producer_task.Start();
@@ -177,7 +184,7 @@ int main(int argc, char* argv[])
                                     // create channel for worker
                                     control_channel->cwrite("newchannel");
                                     string          new_channel_name  = control_channel->cread();
-                                    RequestChannel* worker_channel    = new RequestChannel(new_channel_name, CLIENT_SIDE);
+                                    RequestChannel* worker_channel = getChannel(ipc_option, new_channel_name);
                                     // create worker
                                     auto worker_task = Task(workerFunction, worker_channel);
                                     worker_task.Start();
@@ -195,6 +202,7 @@ int main(int argc, char* argv[])
                     // 
                     // Live update
                     //
+                        cout << "Live update" << "\n";
                         // create a function that prints the histogram after every some interval
                         auto updateFunction = function<int(int)>([&](int input)
                             {
@@ -241,7 +249,8 @@ int main(int argc, char* argv[])
                             update_task.WaitForCompletion();
                         // timer
                             auto end_time = CurrentTimeInMicroSeconds();
-                        
+                        // control channel
+                            delete control_channel;
                     // 
                     // Print results
                     // 

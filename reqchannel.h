@@ -24,7 +24,7 @@ class RequestChannel
                 READ_MODE,
                 WRITE_MODE
             } Mode;
-    private:
+    
         // Data
             string my_name   = "";
             string side_name = "";
@@ -38,7 +38,7 @@ class RequestChannel
             virtual void   open_read_pipe(string _pipe_name);
             virtual void   open_write_pipe(string _pipe_name);
 
-    public:
+    
         // Constructors
             RequestChannel();
             RequestChannel(const string _name, const Side _side);

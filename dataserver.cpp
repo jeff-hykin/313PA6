@@ -15,13 +15,29 @@ using namespace std;
 int             nchannels = 0;
 pthread_mutex_t newchannel_lock;
 void*           handle_process_loop(void* _channel);
+char            ipc_option;
+
+RequestChannel* getChannel(string name) 
+    {
+        // fifo
+        if (ipc_option == 'f') {
+            return new Fifo(name, RequestChannel::SERVER_SIDE);
+        // message queue
+        } else if (ipc_option == 'q') {
+            cout << "FIXME, not yet implemented" << "\n";
+        // shared memory
+        } else if (ipc_option == 's') {
+            cout << "FIXME, not yet implemented" << "\n";
+        }
+        return nullptr;
+    }
 
 void process_newchannel(RequestChannel* _channel)
     {
         nchannels++;
         string new_channel_name = "data" + to_string(nchannels) + "_";
         _channel->cwrite(new_channel_name);
-        RequestChannel* data_channel = new RequestChannel(new_channel_name, RequestChannel::SERVER_SIDE);
+        RequestChannel* data_channel = getChannel(new_channel_name);
         pthread_t       thread_id;
         if(pthread_create(&thread_id, NULL, handle_process_loop, data_channel) < 0)
             {
@@ -72,16 +88,8 @@ int main(int argc, char* argv[])
     {
         newchannel_lock = PTHREAD_MUTEX_INITIALIZER;
         // get the option from the client
-        char ipc_option = *argv[0];
-        // fifo
-        if (ipc_option == 'f') {
-            Fifo control_channel("control", RequestChannel::SERVER_SIDE);
-            handle_process_loop(&control_channel);
-        // message queue
-        } else if (ipc_option == 'q') {
-            cout << "FIXME, not yet implemented" << "\n";
-        // shared memory
-        } else if (ipc_option == 's') {
-            cout << "FIXME, not yet implemented" << "\n";
-        }
+        ipc_option = *argv[0];
+        RequestChannel* control_channel = getChannel("control");
+        handle_process_loop(&control_channel);
+        delete control_channel;
     }
