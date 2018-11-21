@@ -33,46 +33,10 @@ using namespace std;
         }
     RequestChannel::RequestChannel(const std::string _name, const Side _side) : my_name(_name), my_side(_side), side_name((_side == RequestChannel::SERVER_SIDE) ? "SERVER" : "CLIENT")
         {
-            // Summary:
-                // /* Creates a "local copy" of the channel specified by the given name.
-                //  If the channel does not exist, the associated IPC mechanisms are
-                //  created. If the channel exists already, this object is associated with the channel.
-                //  The channel has two ends, which are conveniently called "SERVER_SIDE" and "CLIENT_SIDE".
-                //  If two processes connect through a channel, one has to connect on the server side
-                //  and the other on the client side. Otherwise the results are unpredictable.
-
-                //  NOTE: If the creation of the request channel fails (typically happens when too many
-                //  request channels are being created) and error message is displayed, and the program
-                //  unceremoniously exits.
-
-                //  NOTE: It is easy to open too many request channels in parallel. In most systems,
-                //  limits on the number of open files per process limit the number of established
-                //  request channels to 125.
-                // */
-            // if(_side == SERVER_SIDE)
-            //     {
-            //         open_write_pipe(pipe_name(WRITE_MODE).c_str());
-            //         open_read_pipe(pipe_name(READ_MODE).c_str());
-            //     }
-            // else
-            //     {
-            //         cout << "calling open_read_pipe" << "\n";
-            //         open_read_pipe(pipe_name(READ_MODE).c_str());
-            //         open_write_pipe(pipe_name(WRITE_MODE).c_str());
-            //     }
         }
     
     RequestChannel::~RequestChannel()
         {
-            // Summary:
-                // /* Destructor of the local copy of the bus. By default, the Server Side deletes any IPC 
-                // mechanisms associated with the channel. */
-            // close(write_file_descriptor);
-            // close(read_file_descriptor);
-            // //if (my_side == SERVER_SIDE) {
-            // remove(pipe_name(READ_MODE).c_str());
-            // remove(pipe_name(WRITE_MODE).c_str());
-            // //}
         }
 
 // 

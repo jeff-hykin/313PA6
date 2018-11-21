@@ -90,6 +90,6 @@ int main(int argc, char* argv[])
         // get the option from the client
         ipc_option = *argv[0];
         RequestChannel* control_channel = getChannel("control");
-        handle_process_loop(&control_channel);
+        handle_process_loop(control_channel);
         delete control_channel;
     }

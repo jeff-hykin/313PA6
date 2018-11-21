@@ -36,10 +36,8 @@ using namespace std;
 
 RequestChannel* getChannel(char ipc_option, string name) 
     {
-        cout << "getChannel: ipc_option = " << ipc_option << "\n";
         // fifo
         if (ipc_option == 'f') {
-            cout << "creating Fifo" << "\n";
             return new Fifo(name, CLIENT_SIDE);
         // message queue
         } else if (ipc_option == 'q') {
