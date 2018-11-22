@@ -12,7 +12,7 @@ using namespace std;
 class RequestChannel
     {
     public:
-        // Data
+        // Data types
             typedef enum
             {
                 SERVER_SIDE,
@@ -32,19 +32,17 @@ class RequestChannel
             /*  The current implementation uses named pipes. */
             int write_file_descriptor;
             int read_file_descriptor;
-        // methods
-            virtual string pipe_name(Mode _mode) = 0;
-            virtual void   create_pipe(string _pipe_name) = 0;
-            virtual void   open_read_pipe(string _pipe_name) = 0;
-            virtual void   open_write_pipe(string _pipe_name) = 0;
-
         // Constructors
             virtual ~RequestChannel() = 0;
-        // Methods
-            virtual string cread() = 0;
-            virtual void   cwrite(string _msg) = 0;
-            virtual string name() = 0;
-            virtual int    read_fd() = 0;
-            virtual int    write_fd() = 0;
+        // methods
+            virtual string pipe_name       (Mode  ) = 0;
+            virtual void   create_pipe     (string) = 0;
+            virtual void   open_read_pipe  (string) = 0;
+            virtual void   open_write_pipe (string) = 0;
+            virtual string cread           (      ) = 0;
+            virtual void   cwrite          (string) = 0;
+            virtual string name            (      ) = 0;
+            virtual int    read_fd         (      ) = 0;
+            virtual int    write_fd        (      ) = 0;
     };
 #endif
