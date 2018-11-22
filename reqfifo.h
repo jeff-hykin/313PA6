@@ -14,27 +14,28 @@ class Fifo : public RequestChannel
     {
     private:
         // Data
-            string my_name   = "";
+            string name      = "";
             string side_name = "";
-            RequestChannel::Side my_side;
+            RequestChannel::Side side;
             /*  The current implementation uses named pipes. */
             int write_file_descriptor;
             int read_file_descriptor;
         // methods
             string pipe_name(RequestChannel::Mode _mode);
-            void   create_pipe(string _pipe_name);
-            void   open_read_pipe(string _pipe_name);
-            void   open_write_pipe(string _pipe_name);
+            void   create_pipe     (string);
+            void   open_read_pipe  (string);
+            void   open_write_pipe (string);
 
     public:
         // Constructors
-            Fifo(const string _name, const RequestChannel::Side _side);
+            Fifo(const string, const RequestChannel::Side);
             ~Fifo();
+        // getters
+            string get_name();
+            int    get_read_file_descriptor();
+            int    get_write_file_descriptor();
         // Methods
             string cread();
             void   cwrite(string _msg);
-            string name();
-            int    read_fd();
-            int    write_fd();
     };
 #endif

@@ -21,7 +21,7 @@ RequestChannel* getChannel(string name)
     {
         // fifo
         if (ipc_option == 'f') {
-            return new Fifo(name, RequestChannel::SERVER_SIDE);
+            return new Fifo(name, SERVER_SIDE);
         // message queue
         } else if (ipc_option == 'q') {
             cout << "FIXME, not yet implemented" << "\n";

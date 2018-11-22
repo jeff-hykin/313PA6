@@ -32,8 +32,6 @@
 #include "CekoLibrary.h"
 using namespace std;
 
-#define CLIENT_SIDE RequestChannel::CLIENT_SIDE
-
 RequestChannel* getChannel(char ipc_option, string name) 
     {
         // fifo
