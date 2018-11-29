@@ -14,43 +14,40 @@ using namespace std;
 
 
 #define MAX_MESSAGE_SIZE 255
-struct MsgStruct
+struct Package255
     {
         long mailbox_number = 1;
         char data[MAX_MESSAGE_SIZE];
     };
 
-struct Messenger 
+struct Messenger255
     {
         // data
             int mailing_district_id;
             int id_across_processes = 100;
             long mailbox_number = 1;
             string filename;
-            MsgStruct package_to_send;
-            MsgStruct package_to_receive;
+            Package255 package_to_send;
+            Package255 package_to_receive;
         // constructors
-            Messenger(string, long);
-            ~Messenger();
+            Messenger255(string, long);
+            ~Messenger255();
         // methods
-            void Send(void* input_data, long input_mailbox_number);
-            void* Receive();
+            void Send(string input_data, long input_mailbox_number);
+            string Receive();
     };
 
 class MessageQue : public RequestChannel
     {
     public:
         // Data
-            Messenger client_messenger;
-            Messenger server_messenger;
+            Messenger255 client_messenger;
+            Messenger255 server_messenger;
             string name      = "";
-            string side_name = "";
             RequestChannel::Side side;
         // Constructors
             MessageQue(const string, const RequestChannel::Side);
             ~MessageQue();
-        // getters
-            string get_name();
         // Methods
             string cread();
             void   cwrite(string _msg);

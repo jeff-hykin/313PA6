@@ -15,7 +15,6 @@ class Fifo : public RequestChannel
     private:
         // Data
             string name      = "";
-            string side_name = "";
             RequestChannel::Side side;
             /*  The current implementation uses named pipes. */
             int write_file_descriptor;

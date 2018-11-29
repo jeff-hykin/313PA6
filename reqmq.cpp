@@ -44,10 +44,10 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
 #endif
 
 // 
-// Messenger
+// Messenger255
 //
     // constructors
-        Messenger::Messenger(string input_filename, long input_mailbox_number) : filename(input_filename), mailbox_number(input_mailbox_number)
+        Messenger255::Messenger255(string input_filename, long input_mailbox_number) : filename(input_filename), mailbox_number(input_mailbox_number)
             {
                 // a warning
                 if (mailbox_number <= 0)
@@ -66,18 +66,18 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
                 int inter_process_source_id = ftok(filename.c_str(), id_across_processes);
                 if (inter_process_source_id < 0) 
                     {
-                        puts("There was an error creating a Messenger() with the filename of " << filename  << "\n")
+                        puts("There was an error creating a Messenger255() with the filename of " << filename  << "\n")
                         exit(1);
                     }
                 // create the mailing district using the file as the memory source
                 mailing_district_id = msgget(inter_process_source_id, CREATE_IF_DOESNT_YET_EXIST_FLAG | WTF_1 );
                 if (mailing_district_id < 0)
                     {
-                        puts("There was an error using msgget() inside Messenger() with the filename of " << filename  << "\n")
+                        puts("There was an error using msgget() inside Messenger255() with the filename of " << filename  << "\n")
                         exit(1);
                     }
             }
-        Messenger::~Messenger() 
+        Messenger255::~Messenger255() 
             {
                 // delete the file (if it exists)
                 remove(filename.c_str());
@@ -85,21 +85,31 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
                 msgctl(mailing_district_id, REMOVE_IDENTIFIER_FLAG, NULL);
             }
     // methods
-        void Messenger::Send(void* input_data, long input_mailbox_number)
+        void Messenger255::Send(string input_data, long input_mailbox_number)
             {
+                if (sizeof input_data.c_str() > MAX_MESSAGE_SIZE)
+                    {
+                        puts("There was a message being sent on the " << filename <<  " messenger, but the message was too large\nThe message was " << input_data);
+                        exit(1);
+                    }
                 // set the mailbox_number
                 package_to_send.mailbox_number = input_mailbox_number;
                 // copy over the input into the package
-                memcpy(package_to_send.data, input_data, sizeof package_to_send.data);
+                memcpy(package_to_send.data, input_data.c_str(), sizeof package_to_send.data);
                 // send the message to the mailbox
                 msgsnd(mailing_district_id, &package_to_send, sizeof package_to_send.data, 0);
             }
-        void* Messenger::Receive()
+        string Messenger255::Receive()
             {
                 // this changes the data that the data_pointer is pointing to 
                 msgrcv(mailing_district_id, &package_to_receive, sizeof package_to_send.data, package_to_receive.mailbox_number, 0);
-                // return the data after the changes are made
-                return package_to_receive.data;
+                // // plus 1 for the null char
+                char c_string[MAX_MESSAGE_SIZE + 1];
+                // copy the data
+                memcpy(c_string, package_to_receive.data, MAX_MESSAGE_SIZE);
+                // add the null terminator
+                c_string[MAX_MESSAGE_SIZE] = '\0';
+                return c_string;
             }
 
 
@@ -110,50 +120,36 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
 // 
     MessageQue::MessageQue(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side), client_messenger("temp_"+input_name, 'c'), server_messenger("temp_"+input_name, 's')
         {
-            side_name = (input_side == SERVER_SIDE) ? "SERVER" : "CLIENT";
         }
     
     MessageQue::~MessageQue()
         {
-            
         }
 
 //
 // Getters
 // 
-    string MessageQue::get_name        () { return name; }
     string MessageQue::cread           ()
         {
-            // puts("cread from " << side_name  << "\n");
-            void* data;
-            if (side_name == "SERVER") 
+            if (side == SERVER_SIDE) 
                 {
-                    data = server_messenger.Receive();
+                    return server_messenger.Receive();
                 }
             else
                 {
-                    data = client_messenger.Receive();
+                    return client_messenger.Receive();
                 }
-            // // plus 1 for the null char
-            char c_string[MAX_MESSAGE_SIZE + 1];
-            // copy the data
-            memcpy(c_string, data, MAX_MESSAGE_SIZE);
-            // add the null terminator
-            c_string[MAX_MESSAGE_SIZE] = '\0';
-            return c_string;
         }
 
-    void   MessageQue::cwrite          (string msg)
+    void   MessageQue::cwrite          (string message)
         {
-            // puts("cwrite from " << side_name << "\n");
-            void* data = (void*)msg.c_str();
-            if (side_name == "SERVER") 
+            if (side == SERVER_SIDE)
                 {
-                    server_messenger.Send(data, client_messenger.mailbox_number);
+                    server_messenger.Send(message, client_messenger.mailbox_number);
                 }
             else
                 {
-                    client_messenger.Send(data, server_messenger.mailbox_number);
+                    client_messenger.Send(message, server_messenger.mailbox_number);
                 }
         }
     
