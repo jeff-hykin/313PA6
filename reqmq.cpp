@@ -101,11 +101,6 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
                     }
                 puts( "    " << filename << (mailbox_number == 's'? " server ":" client ") << "SENDING \"" << package_to_send.data << "\" to " << (package_to_send.mailbox_number == 's'? " server ":" client ") << "\n");
                 msgsnd(id, &package_to_send, data_size_in_bytes, 0);
-                MsgStruct package_to_receive;
-                package_to_receive.mailbox_number = package_to_send.mailbox_number;
-                auto error = msgrcv(id, &package_to_receive, data_size_in_bytes, 0, 0);
-                // return the data_pointer after the changes are made
-                puts( "    " << filename << (package_to_receive.mailbox_number == 's'? " server ":" client ") << "RECEIVED \"" << package_to_receive.data << "\"\n");
             }
         void* Messenger::Receive()
             {
@@ -153,7 +148,7 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
     string MessageQue::get_name        () { return name; }
     string MessageQue::cread           ()
         {
-            cout << "cread from " << side_name  << "\n";
+            puts("cread from " << side_name  << "\n");
             void* data;
             if (side_name == "SERVER") 
                 {
@@ -174,7 +169,7 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
 
     void   MessageQue::cwrite          (string msg)
         {
-            cout << "cwrite from " << side_name << "\n";
+            puts("cwrite from " << side_name << "\n");
             void* data = (void*)msg.c_str();
             if (side_name == "SERVER") 
                 {
