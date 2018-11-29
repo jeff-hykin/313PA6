@@ -10,9 +10,8 @@
 #include <string>
 using namespace std;
 
-class SharedResourceManager
+struct SharedResourceManager
     {
-    public:
         // data
             int memory_id;
             string filename;
@@ -28,7 +27,7 @@ class SharedResourceManager
             void GiveResource();
     };
 
-class SharedMemory255
+struct SharedMemory255
     {
         // data
             void* location;
@@ -46,10 +45,20 @@ class SharedMemory255
             void Write(string input_data);
     };
 
-
-class SharedMemoryChannel : public RequestChannel
+struct SharedMemoryQue
     {
-    public:
+        // data
+            SharedResourceManager not_empty_manager;
+            SharedResourceManager not_full_manager;
+            SharedMemory255 memory;
+        // methods
+            void push(string);
+            string pop();
+    };
+
+
+struct SharedMemoryChannel : public RequestChannel
+    {
         // Data
             string name      = "";
             RequestChannel::Side side;

@@ -146,26 +146,45 @@ using namespace std;
 
 
 
+//
+// Shared Memory Que
 // 
-// Constructors
+    void SharedMemoryQue::push(string message)
+        {
+            not_full_manager.WaitTillResourceIsAvaliableThenTakeIt();
+            memory.Write(message);
+            not_empty_manager.GiveResource();
+        }
+    string SharedMemoryQue::pop()
+        {
+            not_empty_manager.WaitTillResourceIsAvaliableThenTakeIt();
+            string output = memory.Read();
+            not_full_manager.GiveResource();
+            return output;
+        }
 // 
-    SharedMemoryChannel::SharedMemoryChannel(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side)
-        {
-        }
-    
-    SharedMemoryChannel::~SharedMemoryChannel()
-        {
-        }
+// SharedMemoryChannel
+// 
+    // 
+    // Constructors
+    // 
+        SharedMemoryChannel::SharedMemoryChannel(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side)
+            {
+            }
+        
+        SharedMemoryChannel::~SharedMemoryChannel()
+            {
+            }
 
-// 
-// Methods
-// 
-    string SharedMemoryChannel::cread           ()
-        {
-            
-        }
+    // 
+    // Methods
+    // 
+        string SharedMemoryChannel::cread           ()
+            {
+                
+            }
 
-    void   SharedMemoryChannel::cwrite          (string msg)
-        {
-            
-        }
+        void   SharedMemoryChannel::cwrite          (string message)
+            {
+                
+            }
