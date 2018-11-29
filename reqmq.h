@@ -23,7 +23,7 @@ struct Messenger255
     {
         // data
             int mailing_district_id;
-            int id_across_processes = 100;
+            int id_across_processes = 100; // this is an arbitrary number from what I understand
             long mailbox_number = 1;
             string filename;
             Package255 package_to_send;

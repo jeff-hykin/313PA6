@@ -37,11 +37,6 @@ using namespace std;
 #define WTF_1 0644
 #define WTF_2 0666
 
-// basically a threadsafe cout 
-#ifndef puts
-#define puts(ARGS) {stringstream converter_to_string; converter_to_string << ARGS; cout << converter_to_string.str(); }
-#endif
-
 // 
 // Messenger255
 //
@@ -58,16 +53,8 @@ using namespace std;
                                 << "If mailbox_number is less than 0, \n    then the first message in the queue with the lowest type less than or equal to the absolute value of mailbox_number will be read\n";
                     }
                 package_to_receive.mailbox_number = mailbox_number;
-                filename = input_filename;
-                // make the file if it doesnt exist
-                ofstream(input_filename.c_str());
                 // get an inter-process source id for that file (making sure the file is avaliable)
-                int inter_process_source_id = ftok(filename.c_str(), id_across_processes);
-                if (inter_process_source_id < 0) 
-                    {
-                        puts("There was an error creating a Messenger255() with the filename of " << filename  << "\n")
-                        exit(1);
-                    }
+                int inter_process_source_id = GetInterProcessKeyUsingFile(input_filename, id_across_processes);
                 // create the mailing district using the file as the memory source
                 mailing_district_id = msgget(inter_process_source_id, CREATE_IF_DOESNT_YET_EXIST_FLAG | WTF_1 );
                 if (mailing_district_id < 0)

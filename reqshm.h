@@ -10,7 +10,7 @@
 using namespace std;
 
 
-class SharedMemory : public RequestChannel
+class SharedMemoryChannel : public RequestChannel
     {
     public:
         // Data
@@ -18,8 +18,8 @@ class SharedMemory : public RequestChannel
             RequestChannel::Side side;
 
         // Constructors
-            SharedMemory(const string, const RequestChannel::Side);
-            ~SharedMemory();
+            SharedMemoryChannel(const string, const RequestChannel::Side);
+            ~SharedMemoryChannel();
         // Methods
             string cread();
             void   cwrite(string);

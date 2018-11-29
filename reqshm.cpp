@@ -1,5 +1,5 @@
 /* 
-    File: SharedMemory.C
+    File: SharedMemoryChannel.C
 
     Author: R. Bettati
             Department of Computer Science
@@ -35,7 +35,7 @@ class KernelBoundedBuffer
     {
     public:
         // data
-            KernelSemaphore semaphore;
+            SharedResourceManager buffer_manager;
             queue<string> queue_of_strings;
             int max_size = 0;
 
@@ -63,38 +63,83 @@ KernelBoundedBuffer::~KernelBoundedBuffer()
 
 void KernelBoundedBuffer::push(string string_input)
     {
-        semaphore.Increment();
+        buffer_manager.GiveResource();
         // FIXME push stuff here
     }
 
 string KernelBoundedBuffer::pop()
     {
-        semaphore.Decrement();
+        buffer_manager.WaitTillResourceIsAvaliableThenTakeIt();
         string output = "FIXME, 02940";
         // FIXME pop stuff here
         return output;
     }
+    
+template <class ANYTYPE>
+class SharedMemory
+    {
+        // data
+            void* location;
+            int id_across_processes = 103; // this is an arbitrary number from what I understand
+            SharedResourceManager memory_manager;
+            string filename;
+            ANYTYPE output;
+        // constructors 
+            SharedMemory()
+                {
+                }
+            //  TODO destructor
+        // methods
+            void SetLocation(string input_filename)
+                {
+                    filename = input_filename;
+                    // make the file if it doesnt exist
+                    ofstream(input_filename.c_str());
+                    // get an inter-process source id for that file (making sure the file is avaliable)
+                    int inter_process_key_id = GetInterProcessKeyUsingFile(filename, id_across_processes);
+                    
+                }
+            ANYTYPE Read()
+                {
+                    // attach the memory
+                    // get the memory_manager for it
+                    memory_manager.WaitTillResourceIsAvaliableThenTakeIt();
+                    // wait
+                    // copy data
+                    ANYTYPE* data_pointer = location;
+                    ANYTYPE output = *data_pointer;
+                    // done using memory
+                    memory_manager.GiveResource();
+                    return output;
+                }
+            void Write(ANYTYPE input)
+                {
+                    memory_manager.WaitTillResourceIsAvaliableThenTakeIt();
+                    // FIXME do the writing here
+                    memory_manager.GiveResource();
+                }
+    };
 
 // 
 // Constructors
 // 
-    SharedMemory::SharedMemory(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side)
+    SharedMemoryChannel::SharedMemoryChannel(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side)
         {
         }
     
-    SharedMemory::~SharedMemory()
+    SharedMemoryChannel::~SharedMemoryChannel()
         {
         }
 
 // 
 // Methods
 // 
-    string SharedMemory::cread           ()
+    string SharedMemoryChannel::cread           ()
         {
             
         }
 
-    void   SharedMemory::cwrite          (string msg)
+    void   SharedMemoryChannel::cwrite          (string msg)
         {
             
         }
