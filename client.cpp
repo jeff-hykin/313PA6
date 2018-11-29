@@ -9,6 +9,7 @@
 #include "Histogram.h"
 #include "reqchannel.h"
 #include "reqfifo.h"
+#include "reqmq.h"
 #include <algorithm>
 #include <assert.h>
 #include <cassert>
@@ -39,7 +40,7 @@ RequestChannel* getChannel(char ipc_option, string name)
             return new Fifo(name, CLIENT_SIDE);
         // message queue
         } else if (ipc_option == 'q') {
-            cout << "FIXME, not yet implemented" << "\n";
+            return new MessageQue(name, CLIENT_SIDE);
         // shared memory
         } else if (ipc_option == 's') {
             cout << "FIXME, not yet implemented" << "\n";
@@ -58,7 +59,7 @@ int main(int argc, char* argv[])
             int number_of_requests_per_person  = 100;                               // default number_of_requests_per_person
             int number_of_worker_threads       = 5;                                 // default number_of_worker threads
             int capacity_of_the_request_buffer = 3 * number_of_requests_per_person; // default capacity_of_the_request_buffer
-            char ipc_option                    = 'f';                               // default inter process communication option
+            char ipc_option                    = 'q';                               // default inter process communication option
         // 
         // Get arguments
         // 
@@ -159,6 +160,7 @@ int main(int argc, char* argv[])
                                             }
                                         else
                                             {
+                                                cout << "response_of_worker = " << (response_of_worker) << "\n";
                                                 // put the data in the corrisponding stat buffer 
                                                 histogram_of_tasks.update(persons_name, response_of_worker);
                                             }
@@ -202,7 +204,6 @@ int main(int argc, char* argv[])
                         // create a function that prints the histogram after every some interval
                         auto updateFunction = function<int(int)>([&](int input)
                             {
-                                return 0;
                                 while (true)
                                     {
                                         // OS-independent version of system("clear")

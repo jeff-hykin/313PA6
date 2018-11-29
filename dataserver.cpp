@@ -1,5 +1,6 @@
 #include "reqchannel.h"
 #include "reqfifo.h"
+#include "reqmq.h"
 #include <cassert>
 #include <cstring>
 #include <errno.h>
@@ -24,7 +25,7 @@ RequestChannel* getChannel(string name)
             return new Fifo(name, SERVER_SIDE);
         // message queue
         } else if (ipc_option == 'q') {
-            cout << "FIXME, not yet implemented" << "\n";
+            return new MessageQue(name, SERVER_SIDE);
         // shared memory
         } else if (ipc_option == 's') {
             cout << "FIXME, not yet implemented" << "\n";
@@ -45,24 +46,23 @@ void process_newchannel(RequestChannel* _channel)
             }
     }
 
-void process_request(RequestChannel* _channel, string _request)
+void process_request(RequestChannel* input_channel, string input_request)
     {
-        if(_request.compare(0, 5, "hello") == 0)
+        if(input_request.compare(0, 5, "hello") == 0)
             {
-                _channel->cwrite("hello to you too");
+                input_channel->cwrite("hello to you too");
             }
-        else if(_request.compare(0, 4, "data") == 0)
-            {
-                usleep(1000 + (rand() % 5000));
-                _channel->cwrite(to_string(rand() % 100));
+        else if(input_request.compare(0, 4, "data") == 0)
+            {   usleep(1000 + (rand() % 5000));
+                input_channel->cwrite(to_string(rand() % 100));
             }
-        else if(_request.compare(0, 10, "newchannel") == 0)
+        else if(input_request.compare(0, 10, "newchannel") == 0)
             {
-                process_newchannel(_channel);
+                process_newchannel(input_channel);
             }
         else
             {
-                _channel->cwrite("unknown request");
+                input_channel->cwrite("unknown request");
             }
     }
 

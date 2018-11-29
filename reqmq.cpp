@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cstring>
 #include <errno.h>
+#include <cstdlib>
 #include <fcntl.h>
 #include <iostream>
 #include <signal.h>
@@ -19,144 +20,162 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <unistd.h>
-
+#include <fstream>
+#include <sstream>
 using namespace std;
 
-#define MAX_MESSAGE 255
+// 
+// constants 
+// 
+#define MAX_MESSAGE_SIZE 255
+auto CREATE_IF_DOESNT_YET_EXIST_FLAG = IPC_CREAT;
+auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
+// No idea what these magic numbers are
+auto WTF_1 = 0644;
+
+
+#define puts(ARGS) {stringstream converter_to_string; converter_to_string << ARGS; cout << converter_to_string.str(); }
+
+
+// 
+// Messenger
+//
+    // constructors
+        Messenger::Messenger(string input_filename, long input_mailbox_number) : data_size_in_bytes(MAX_MESSAGE_SIZE), filename(input_filename)
+            {
+                mailbox_number = input_mailbox_number;
+                // just add a warning
+                if (mailbox_number <= 0)
+                    {
+                        cout << "Note mailbox numbers <= 0 have different behavior and the messenger associated with " << input_filename << " has a number of " << mailbox_number << "\n"
+                                << "The behavior is:\n"
+                                << "If mailbox_number is 0, \n    then the first message in the queue is read.\n" 
+                                << "If mailbox_number is greater than 0, \n    then the first message in the queue of type mailbox_number is read, unless MSG_EXCEPT was specified in msgflg, in which case the first message in the queue of type not equal to mailbox_number will be read.\n" 
+                                << "If mailbox_number is less than 0, \n    then the first message in the queue with the lowest type less than or equal to the absolute value of mailbox_number will be read\n";
+                    }
+                package_to_receive.mailbox_number = mailbox_number;
+                filename = input_filename;
+                // create the file, TODO make this not rely on system()/linux 
+                string system_command = "touch " + input_filename;
+                system(system_command.c_str());
+                // get a source id
+                message_source_id = ftok(filename.c_str(), id_across_processes);
+                if (message_source_id < 0) {
+                    cerr << "There was an error creating a Messenger() with the filename of " << filename  << "\n";
+                    exit(1);
+                }
+                id = msgget(message_source_id, WTF_1 | CREATE_IF_DOESNT_YET_EXIST_FLAG);
+            }
+        Messenger::~Messenger() 
+            {
+                msgctl(id, REMOVE_IDENTIFIER_FLAG, NULL);
+                if (has_data)
+                    {
+                        delete message_type_and_data_pointer;
+                    }
+            }
+    // methods
+        void Messenger::Send(void* input_data, long input_mailbox_number)
+            {
+                // set the mailbox_number
+                package_to_send.mailbox_number = input_mailbox_number;
+                // copy over the input into the package
+                memcpy(package_to_send.data, input_data, data_size_in_bytes);
+                // FIXME, Debugging
+                if ((string)package_to_send.data == "unknown request")
+                    {
+                        cerr << "unknown request " << "\n";
+                        exit(1);
+                    }
+                puts( "    " << filename << (mailbox_number == 's'? " server ":" client ") << "SENDING \"" << package_to_send.data << "\" to " << (package_to_send.mailbox_number == 's'? " server ":" client ") << "\n");
+                msgsnd(id, &package_to_send, data_size_in_bytes, 0);
+                MsgStruct package_to_receive;
+                package_to_receive.mailbox_number = package_to_send.mailbox_number;
+                auto error = msgrcv(id, &package_to_receive, data_size_in_bytes, 0, 0);
+                // return the data_pointer after the changes are made
+                puts( "    " << filename << (package_to_receive.mailbox_number == 's'? " server ":" client ") << "RECEIVED \"" << package_to_receive.data << "\"\n");
+            }
+        void* Messenger::Receive()
+            {
+                // this changes the data that the data_pointer is pointing to 
+                puts( "    " << filename << (package_to_receive.mailbox_number == 's'? " server ":" client ") << " TRYING TO RECEIVE \n");
+                msgrcv(id, &package_to_receive, data_size_in_bytes, package_to_receive.mailbox_number, 0);
+                // return the data_pointer after the changes are made
+                puts( "    " << filename << (mailbox_number == 's'? " server ":" client ") << "RECEIVED \"" << package_to_receive.data << "\"\n");
+                return package_to_receive.data;
+            }
+        void Messenger::SetDataAndMessageType(void* input_data)
+            {
+                // delete the old message data before creating a new thing
+                if (has_data)
+                    {
+                        delete message_type_and_data_pointer;
+                    }
+                int room_for_message_type = sizeof(long);
+                message_type_and_data_pointer = new char(data_size_in_bytes + room_for_message_type);
+                // data is just a few bytes down from message_type_and_data_pointer
+                data_pointer = (void*)(((long)message_type_and_data_pointer) + room_for_message_type);
+                memcpy(data_pointer, input_data, data_size_in_bytes);
+                has_data = true;
+            }
+
+
+
 
 // 
 // Constructors
 // 
-    MessageQue::MessageQue(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side), side_name((input_side == SERVER_SIDE) ? "SERVER" : "CLIENT")
+    MessageQue::MessageQue(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side), client_messenger("temp_"+input_name, 'c'), server_messenger("temp_"+input_name, 's')
         {
-            // Summary:
-                // /* Creates a "local copy" of the channel specified by the given name.
-                //  If the channel does not exist, the associated IPC mechanisms are
-                //  created. If the channel exists already, this object is associated with the channel.
-                //  The channel has two ends, which are conveniently called "SERVER_SIDE" and "CLIENT_SIDE".
-                //  If two processes connect through a channel, one has to connect on the server side
-                //  and the other on the client side. Otherwise the results are unpredictable.
-
-                //  NOTE: If the creation of the request channel fails (typically happens when too many
-                //  request channels are being created) and error message is displayed, and the program
-                //  unceremoniously exits.
-
-                //  NOTE: It is easy to open too many request channels in parallel. In most systems,
-                //  limits on the number of open files per process limit the number of established
-                //  request channels to 125.
-                // */
-            if(input_side == SERVER_SIDE)
-                {
-                    open_write_pipe(pipe_name(WRITE_MODE).c_str());
-                    open_read_pipe(pipe_name(READ_MODE).c_str());
-                }
-            else
-                {
-                    open_read_pipe(pipe_name(READ_MODE).c_str());
-                    open_write_pipe(pipe_name(WRITE_MODE).c_str());
-                }
+            side_name = (input_side == SERVER_SIDE) ? "SERVER" : "CLIENT";
         }
     
     MessageQue::~MessageQue()
         {
-            // Summary:
-                // /* Destructor of the local copy of the bus. By default, the Server RequestChannel::Side deletes any IPC 
-                // mechanisms associated with the channel. */
-            close(write_file_descriptor);
-            close(read_file_descriptor);
-            remove(pipe_name(READ_MODE).c_str());
-            remove(pipe_name(WRITE_MODE).c_str());
+            
         }
 
 //
 // Getters
 // 
-    string MessageQue::get_name                  () { return name; }
-    int    MessageQue::get_read_file_descriptor  () { return read_file_descriptor; }
-    int    MessageQue::get_write_file_descriptor () { return write_file_descriptor; }
-// 
-// Methods
-// 
-    string MessageQue::pipe_name       (RequestChannel::Mode mode)
-        {
-            string pipe_name = "fifo_" + name;
-
-            if(side == CLIENT_SIDE)
-                {
-                    if (mode == READ_MODE) 
-                        {
-                            pipe_name += "1";
-                        }
-                    else
-                        {
-                            pipe_name += "2";
-                        }
-                }
-            else // SERVER_SIDE
-                {
-                    if(mode == READ_MODE)
-                        {
-                            pipe_name += "2";
-                        }
-                    else
-                        {
-                            pipe_name += "1";
-                        }
-                }
-            return pipe_name;
-        }
-    void   MessageQue::create_pipe     (string pipe_name_argument)
-        {
-            mkfifo(pipe_name_argument.c_str(), 0600) < 0;
-        }
-
-    void   MessageQue::open_write_pipe (string pipe_name_argument)
-        {
-            create_pipe(pipe_name_argument);
-            write_file_descriptor = open(pipe_name_argument.c_str(), O_WRONLY);
-            if(write_file_descriptor < 0)
-                {
-                    cout << "Error opening write pipe("<< pipe_name_argument<< ") inside of open_write_pipe" << "\n";
-                }
-        }
-
-    void   MessageQue::open_read_pipe  (string pipe_name_argument)
-        {
-            create_pipe(pipe_name_argument);
-            read_file_descriptor = open(pipe_name_argument.c_str(), O_RDONLY);
-            if(read_file_descriptor < 0)
-                {
-                    cout << "Error opening read pipe("<< pipe_name_argument<< ") inside of open_write_pipe" << "\n";
-                    exit(0);
-                }
-        }
-
+    string MessageQue::get_name        () { return name; }
     string MessageQue::cread           ()
         {
-            // summary:
-                // /* Blocking read of data from the channel. Returns a string of characters
-                // read from the channel. Returns NULL if read failed. */
-            char buf[MAX_MESSAGE];
-            if(read(read_file_descriptor, buf, MAX_MESSAGE) <= 0)
+            cout << "cread from " << side_name  << "\n";
+            void* data;
+            if (side_name == "SERVER") 
                 {
-                    cerr << "Error in MessageQue cread()" << "\n";
+                    data = server_messenger.Receive();
                 }
-            return buf;
+            else
+                {
+                    data = client_messenger.Receive();
+                }
+            // // plus 1 for the null char
+            char c_string[MAX_MESSAGE_SIZE + 1];
+            // copy the data
+            memcpy(c_string, data, MAX_MESSAGE_SIZE);
+            // add the null terminator
+            c_string[MAX_MESSAGE_SIZE] = '\0';
+            return c_string;
         }
 
     void   MessageQue::cwrite          (string msg)
         {
-            if(msg.size() > MAX_MESSAGE)
+            cout << "cwrite from " << side_name << "\n";
+            void* data = (void*)msg.c_str();
+            if (side_name == "SERVER") 
                 {
-                    cerr << "Error in cwrite()" << "\n";
+                    server_messenger.Send(data, client_messenger.mailbox_number);
                 }
-            // msg.size() + 1 to include the NULL byte
-            if(write(write_file_descriptor, msg.c_str(), msg.size() + 1) < 0)
-                { 
-                    cerr << "Error in cwrite()" << "\n";
+            else
+                {
+                    client_messenger.Send(data, server_messenger.mailbox_number);
                 }
         }
     
 
-#undef MAX_MESSAGE
+#undef MAX_MESSAGE_SIZE

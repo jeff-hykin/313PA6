@@ -27,10 +27,6 @@ class RequestChannel
         // Constructors
             virtual ~RequestChannel() = 0;
         // methods
-            virtual string pipe_name                 (Mode  ) = 0;
-            virtual void   create_pipe               (string) = 0;
-            virtual void   open_read_pipe            (string) = 0;
-            virtual void   open_write_pipe           (string) = 0;
             virtual string cread                     (      ) = 0;
             virtual void   cwrite                    (string) = 0;
     };
