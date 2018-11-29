@@ -23,12 +23,10 @@
 
 using namespace std;
 
-#define MAX_MESSAGE 255
-
 // 
 // Constructors
 // 
-    Fifo::Fifo(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side), 
+    Fifo::Fifo(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side)
         {
             // Summary:
                 // /* Creates a "local copy" of the channel specified by the given name.
@@ -137,8 +135,8 @@ using namespace std;
             // summary:
                 // /* Blocking read of data from the channel. Returns a string of characters
                 // read from the channel. Returns NULL if read failed. */
-            char buf[MAX_MESSAGE];
-            if(read(read_file_descriptor, buf, MAX_MESSAGE) <= 0)
+            char buf[MAX_MESSAGE_SIZE];
+            if(read(read_file_descriptor, buf, MAX_MESSAGE_SIZE) <= 0)
                 {
                     cerr << "Error in Fifo cread()" << "\n";
                 }
@@ -147,7 +145,7 @@ using namespace std;
 
     void   Fifo::cwrite          (string msg)
         {
-            if(msg.size() > MAX_MESSAGE)
+            if(msg.size() > MAX_MESSAGE_SIZE)
                 {
                     cerr << "Error in cwrite()" << "\n";
                 }
@@ -157,6 +155,3 @@ using namespace std;
                     cerr << "Error in cwrite()" << "\n";
                 }
         }
-    
-
-#undef MAX_MESSAGE

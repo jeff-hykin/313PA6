@@ -8,6 +8,7 @@
 #include <string>
 using namespace std;
 
+#define MAX_MESSAGE_SIZE 255
 
 class RequestChannel
     {

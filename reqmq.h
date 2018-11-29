@@ -13,7 +13,6 @@ using namespace std;
 
 
 
-#define MAX_MESSAGE_SIZE 255
 struct Package255
     {
         long mailbox_number = 1;
@@ -52,5 +51,4 @@ class MessageQue : public RequestChannel
             string cread();
             void   cwrite(string _msg);
     };
-#undef MAX_MESSAGE_SIZE
 #endif

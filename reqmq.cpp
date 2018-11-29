@@ -30,10 +30,9 @@ using namespace std;
 // 
 // constants 
 // 
-#define MAX_MESSAGE_SIZE 255
-auto CREATE_IF_DOESNT_YET_EXIST_FLAG = IPC_CREAT;
-auto FAIL_IF_KEY_EXISTS = IPC_EXCL;
-auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
+#define CREATE_IF_DOESNT_YET_EXIST_FLAG IPC_CREAT
+#define FAIL_IF_KEY_EXISTS IPC_EXCL
+#define REMOVE_IDENTIFIER_FLAG IPC_RMID
 // No idea what these magic numbers are
 #define WTF_1 0644
 #define WTF_2 0666
@@ -152,6 +151,9 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
                     client_messenger.Send(message, server_messenger.mailbox_number);
                 }
         }
-    
 
-#undef MAX_MESSAGE_SIZE
+#undef CREATE_IF_DOESNT_YET_EXIST_FLAG
+#undef FAIL_IF_KEY_EXISTS
+#undef REMOVE_IDENTIFIER_FLAG
+#undef WTF_1
+#undef WTF_2
