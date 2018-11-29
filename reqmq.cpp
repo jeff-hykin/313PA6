@@ -32,9 +32,11 @@ using namespace std;
 // 
 #define MAX_MESSAGE_SIZE 255
 auto CREATE_IF_DOESNT_YET_EXIST_FLAG = IPC_CREAT;
+auto FAIL_IF_KEY_EXISTS = IPC_EXCL;
 auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
 // No idea what these magic numbers are
-auto WTF_1 = 0644;
+#define WTF_1 0644
+#define WTF_2 0666
 
 
 #define puts(ARGS) {stringstream converter_to_string; converter_to_string << ARGS; cout << converter_to_string.str(); }
@@ -46,6 +48,7 @@ auto WTF_1 = 0644;
     // constructors
         Messenger::Messenger(string input_filename, long input_mailbox_number) : data_size_in_bytes(MAX_MESSAGE_SIZE), filename(input_filename)
             {
+                cout << "input_filename = " << (input_filename) << "\n";
                 mailbox_number = input_mailbox_number;
                 // just add a warning
                 if (mailbox_number <= 0)
@@ -63,11 +66,17 @@ auto WTF_1 = 0644;
                 system(system_command.c_str());
                 // get a source id
                 message_source_id = ftok(filename.c_str(), id_across_processes);
-                if (message_source_id < 0) {
-                    cerr << "There was an error creating a Messenger() with the filename of " << filename  << "\n";
-                    exit(1);
-                }
-                id = msgget(message_source_id, WTF_1 | CREATE_IF_DOESNT_YET_EXIST_FLAG);
+                if (message_source_id < 0) 
+                    {
+                        cerr << "There was an error creating a Messenger() with the filename of " << filename  << "\n";
+                        exit(1);
+                    }
+                id = msgget(message_source_id, CREATE_IF_DOESNT_YET_EXIST_FLAG | WTF_1 );
+                if (id < 0)
+                    {
+                        cerr << "There was an error using msgget() inside Messenger() with the filename of " << filename  << "\n";
+                        exit(1);
+                    }
             }
         Messenger::~Messenger() 
             {
