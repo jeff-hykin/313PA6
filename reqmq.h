@@ -23,18 +23,12 @@ struct MsgStruct
 struct Messenger 
     {
         // data
-            int id;
-            int message_source_id;
+            int mailing_district_id;
             int id_across_processes = 100;
             long mailbox_number = 1;
             string filename;
             MsgStruct package_to_send;
             MsgStruct package_to_receive;
-            // TODO, these are no longer needed
-            void* data_pointer;
-            bool has_data = false;
-            long long data_size_in_bytes;
-            void* message_type_and_data_pointer;
         // constructors
             Messenger(string, long);
             ~Messenger();

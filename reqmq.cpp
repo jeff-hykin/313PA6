@@ -47,11 +47,9 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
 // Messenger
 //
     // constructors
-        Messenger::Messenger(string input_filename, long input_mailbox_number) : data_size_in_bytes(MAX_MESSAGE_SIZE), filename(input_filename)
+        Messenger::Messenger(string input_filename, long input_mailbox_number) : filename(input_filename), mailbox_number(input_mailbox_number)
             {
-                cout << "input_filename = " << (input_filename) << "\n";
-                mailbox_number = input_mailbox_number;
-                // just add a warning
+                // a warning
                 if (mailbox_number <= 0)
                     {
                         cout << "Note mailbox numbers <= 0 have different behavior and the messenger associated with " << input_filename << " has a number of " << mailbox_number << "\n"
@@ -62,18 +60,18 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
                     }
                 package_to_receive.mailbox_number = mailbox_number;
                 filename = input_filename;
-                // create the file, TODO make this not rely on system()/linux 
-                string system_command = "touch " + input_filename;
-                system(system_command.c_str());
-                // get a source id
-                message_source_id = ftok(filename.c_str(), id_across_processes);
-                if (message_source_id < 0) 
+                // make the file if it doesnt exist
+                ofstream(input_filename.c_str());
+                // get an inter-process source id for that file (making sure the file is avaliable)
+                int inter_process_source_id = ftok(filename.c_str(), id_across_processes);
+                if (inter_process_source_id < 0) 
                     {
                         puts("There was an error creating a Messenger() with the filename of " << filename  << "\n")
                         exit(1);
                     }
-                id = msgget(message_source_id, CREATE_IF_DOESNT_YET_EXIST_FLAG | WTF_1 );
-                if (id < 0)
+                // create the mailing district using the file as the memory source
+                mailing_district_id = msgget(inter_process_source_id, CREATE_IF_DOESNT_YET_EXIST_FLAG | WTF_1 );
+                if (mailing_district_id < 0)
                     {
                         puts("There was an error using msgget() inside Messenger() with the filename of " << filename  << "\n")
                         exit(1);
@@ -81,15 +79,10 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
             }
         Messenger::~Messenger() 
             {
-                // delete the file, TODO code this without system()
-                string system_command = "rm " + filename;
-                system(system_command.c_str());
+                // delete the file (if it exists)
+                remove(filename.c_str());
                 // delete the id
-                msgctl(id, REMOVE_IDENTIFIER_FLAG, NULL);
-                if (has_data)
-                    {
-                        delete message_type_and_data_pointer;
-                    }
+                msgctl(mailing_district_id, REMOVE_IDENTIFIER_FLAG, NULL);
             }
     // methods
         void Messenger::Send(void* input_data, long input_mailbox_number)
@@ -97,23 +90,15 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
                 // set the mailbox_number
                 package_to_send.mailbox_number = input_mailbox_number;
                 // copy over the input into the package
-                memcpy(package_to_send.data, input_data, data_size_in_bytes);
-                // FIXME, Debugging
-                if ((string)package_to_send.data == "unknown request")
-                    {
-                        cerr << "unknown request " << "\n";
-                        exit(1);
-                    }
-                puts( "    " << filename << (mailbox_number == 's'? " server ":" client ") << "SENDING \"" << package_to_send.data << "\" to " << (package_to_send.mailbox_number == 's'? " server ":" client ") << "\n");
-                msgsnd(id, &package_to_send, data_size_in_bytes, 0);
+                memcpy(package_to_send.data, input_data, sizeof package_to_send.data);
+                // send the message to the mailbox
+                msgsnd(mailing_district_id, &package_to_send, sizeof package_to_send.data, 0);
             }
         void* Messenger::Receive()
             {
                 // this changes the data that the data_pointer is pointing to 
-                puts( "    " << filename << (package_to_receive.mailbox_number == 's'? " server ":" client ") << " TRYING TO RECEIVE \n");
-                msgrcv(id, &package_to_receive, data_size_in_bytes, package_to_receive.mailbox_number, 0);
-                // return the data_pointer after the changes are made
-                puts( "    " << filename << (mailbox_number == 's'? " server ":" client ") << "RECEIVED \"" << package_to_receive.data << "\"\n");
+                msgrcv(mailing_district_id, &package_to_receive, sizeof package_to_send.data, package_to_receive.mailbox_number, 0);
+                // return the data after the changes are made
                 return package_to_receive.data;
             }
 
@@ -139,7 +124,7 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
     string MessageQue::get_name        () { return name; }
     string MessageQue::cread           ()
         {
-            puts("cread from " << side_name  << "\n");
+            // puts("cread from " << side_name  << "\n");
             void* data;
             if (side_name == "SERVER") 
                 {
@@ -160,7 +145,7 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
 
     void   MessageQue::cwrite          (string msg)
         {
-            puts("cwrite from " << side_name << "\n");
+            // puts("cwrite from " << side_name << "\n");
             void* data = (void*)msg.c_str();
             if (side_name == "SERVER") 
                 {
