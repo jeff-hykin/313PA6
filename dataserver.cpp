@@ -66,15 +66,17 @@ void process_request(RequestChannel* input_channel, string input_request)
             }
     }
 
-void* handle_process_loop(void* _channel)
+void* handle_process_loop(void* input_channel)
     {
-        RequestChannel* channel = (RequestChannel*)_channel;
+        RequestChannel* channel = (RequestChannel*)input_channel;
+        // loop until someone sends quit to the control channel
         for(;;)
             {
                 string request = channel->cread();
-                if(request.compare("quit") == 0)
+                if(request == "quit")
                     {
-                        break; // break out of the loop;
+                        delete channel;
+                        break;
                     }
                 process_request(channel, request);
             }
@@ -91,5 +93,4 @@ int main(int argc, char* argv[])
         ipc_option = *argv[0];
         RequestChannel* control_channel = getChannel("control");
         handle_process_loop(control_channel);
-        delete control_channel;
     }

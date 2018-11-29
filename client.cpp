@@ -53,13 +53,14 @@ RequestChannel* getChannel(char ipc_option, string name)
 // 
 int main(int argc, char* argv[])
     {
+        int number_of_people = 3;
         // 
         // Default arguments
         // 
-            int number_of_requests_per_person  = 100;                               // default number_of_requests_per_person
-            int number_of_worker_threads       = 5;                                 // default number_of_worker threads
-            int capacity_of_the_request_buffer = 3 * number_of_requests_per_person; // default capacity_of_the_request_buffer
-            char ipc_option                    = 'q';                               // default inter process communication option
+            int number_of_requests_per_person  = 100;                                              // default number_of_requests_per_person
+            int number_of_worker_threads       = 5;                                                // default number_of_worker threads
+            int capacity_of_the_request_buffer = number_of_people * number_of_requests_per_person; // default capacity_of_the_request_buffer
+            char ipc_option                    = 'q';                                              // default inter process communication option
         // 
         // Get arguments
         // 
@@ -99,22 +100,23 @@ int main(int argc, char* argv[])
                     // 
                     // Initial output
                     // 
-                        cout << "n == " << number_of_requests_per_person << endl;
-                        cout << "w == " << number_of_worker_threads << endl;
-                        cout << "b == " << capacity_of_the_request_buffer << endl;
-                        cout << "i == " << ipc_option << endl;
+                        cout << "n == " << number_of_requests_per_person << "\n";
+                        cout << "w == " << number_of_worker_threads << "\n";
+                        cout << "b == " << capacity_of_the_request_buffer << "\n";
+                        cout << "i == " << ipc_option << "\n";
 
                     // 
                     // Init data structures
                     //
-                        cout << "Init data structures" << "\n";
+                        int total_number_of_requests       = number_of_requests_per_person * number_of_people;
+                        int number_of_not_started_requests = total_number_of_requests;
                         RequestChannel* control_channel = getChannel(ipc_option, "control");
                         BoundedBuffer   request_buffer(capacity_of_the_request_buffer);
                         Histogram       histogram_of_tasks;
                         map<string, BoundedBuffer> stat_buffers;
-                        stat_buffers["data John Smith"] = BoundedBuffer(capacity_of_the_request_buffer/3);
-                        stat_buffers["data Jane Smith"] = BoundedBuffer(capacity_of_the_request_buffer/3);
-                        stat_buffers["data Joe Smith" ] = BoundedBuffer(capacity_of_the_request_buffer/3);
+                        stat_buffers["data John Smith"] = BoundedBuffer(capacity_of_the_request_buffer/number_of_people);
+                        stat_buffers["data Jane Smith"] = BoundedBuffer(capacity_of_the_request_buffer/number_of_people);
+                        stat_buffers["data Joe Smith" ] = BoundedBuffer(capacity_of_the_request_buffer/number_of_people);
                         auto producerFunction = function<int(string)>([&](string persons_name)
                             {
                                 for (auto each : range(0, number_of_requests_per_person))
@@ -130,10 +132,21 @@ int main(int argc, char* argv[])
                                 // 
                                 while (true)
                                     {
-                                        string each_request = request_buffer.pop();
-                                        // save the data request to the worker_channel
-                                        worker_channel->cwrite(each_request);
-                                        if (each_request == "quit")
+                                        // 
+                                        // Check if should stop
+                                        // 
+                                        Lock(number_of_not_started_requests);
+                                        bool should_stop = false;
+                                        if (number_of_not_started_requests <= 0)
+                                            {
+                                                should_stop = true;
+                                            }
+                                        else
+                                            {
+                                                --number_of_not_started_requests;
+                                            }
+                                        Unlock(number_of_not_started_requests);
+                                        if (should_stop)
                                             {
                                                 // close the channel
                                                 delete worker_channel;
@@ -141,6 +154,9 @@ int main(int argc, char* argv[])
                                             }
                                         else
                                             {
+                                                string each_request = request_buffer.pop();
+                                                // save the data request to the worker_channel
+                                                worker_channel->cwrite(each_request);
                                                 // retrieve all the data requests from the worker_channel
                                                 string response_of_worker = worker_channel->cread();
                                                 // put the data in the corrisponding stat buffer 
@@ -151,25 +167,16 @@ int main(int argc, char* argv[])
                             });
                         auto statFunction = function<int(string)>([&](string persons_name)
                             {
-                                while (true)
+                                for (auto each : range(0, number_of_requests_per_person))
                                     {
                                         string response_of_worker = stat_buffers[persons_name].pop();
-                                        if (response_of_worker == "quit")
-                                            {
-                                                break;
-                                            }
-                                        else
-                                            {
-                                                // put the data in the corrisponding stat buffer 
-                                                histogram_of_tasks.update(persons_name, response_of_worker);
-                                            }
+                                        histogram_of_tasks.update(persons_name, response_of_worker);
                                     }
                                 return 0;
                             });
                     //
                     // Start threads
                     //
-                        cout << "Start threads" << "\n";
                         // Producers
                             auto john_producer_task = Task(producerFunction, (string)("data John Smith")); john_producer_task.Start();
                             auto jane_producer_task = Task(producerFunction, (string)("data Jane Smith")); jane_producer_task.Start();
@@ -199,7 +206,6 @@ int main(int argc, char* argv[])
                     // 
                     // Live update
                     //
-                        cout << "Live update" << "\n";
                         // create a function that prints the histogram after every some interval
                         auto updateFunction = function<int(int)>([&](int input)
                             {
@@ -228,16 +234,9 @@ int main(int argc, char* argv[])
                         // workers
                             for (auto each : worker_tasks)
                                 {
-                                    request_buffer.push("quit");
-                                }
-                            for (auto each : worker_tasks)
-                                {
                                     each.WaitForCompletion();
                                 }
                         // stats
-                            stat_buffers["data John Smith"].push("quit");
-                            stat_buffers["data Jane Smith"].push("quit");
-                            stat_buffers["data Joe Smith" ].push("quit");
                             john_stats_task.WaitForCompletion();
                             jane_stats_task.WaitForCompletion();
                             joe_stats_task.WaitForCompletion();
@@ -246,7 +245,7 @@ int main(int argc, char* argv[])
                         // timer
                             auto end_time = CurrentTimeInMicroSeconds();
                         // control channel
-                            delete control_channel;
+                            control_channel->cwrite("quit");
                     // 
                     // Print results
                     // 
