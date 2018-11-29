@@ -28,16 +28,6 @@
 using namespace std;
 
 // 
-// constants 
-// 
-#define CREATE_IF_DOESNT_YET_EXIST_FLAG IPC_CREAT
-#define FAIL_IF_KEY_EXISTS IPC_EXCL
-#define REMOVE_IDENTIFIER_FLAG IPC_RMID
-// No idea what these magic numbers are
-#define WTF_1 0644
-#define WTF_2 0666
-
-// 
 // Messenger255
 //
     // constructors
@@ -138,9 +128,3 @@ using namespace std;
                     client_messenger.Send(message, server_messenger.mailbox_number);
                 }
         }
-
-#undef CREATE_IF_DOESNT_YET_EXIST_FLAG
-#undef FAIL_IF_KEY_EXISTS
-#undef REMOVE_IDENTIFIER_FLAG
-#undef WTF_1
-#undef WTF_2

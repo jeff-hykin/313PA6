@@ -11,16 +11,6 @@
 #include <reqchannel.h>
 using namespace std;
 
-// 
-// Contstants
-// 
-#define CREATE_IF_DOESNT_YET_EXIST_FLAG IPC_CREAT
-#define FAIL_IF_KEY_EXISTS IPC_EXCL
-#define REMOVE_IDENTIFIER_FLAG IPC_RMID
-// No idea what these magic numbers are
-#define WTF_1 0644
-#define WTF_2 0666
-#define WTF_3 101
 
 class SharedResourceManager
     {
@@ -52,7 +42,7 @@ class SharedResourceManager
                     int inter_process_key_id = GetInterProcessKeyUsingFile(filename, id_across_processes);
                     // set the flags
                     sembuf sb{0, number_of_avalible_positions, 0};
-                    memory_id = semget(inter_process_key_id, 1, CREATE_IF_DOESNT_YET_EXIST_FLAG | FAIL_IF_KEY_EXISTS | WTF_2);
+                    memory_id = semget(inter_process_key_id, 1, CREATE_IF_DOESNT_YET_EXIST_FLAG | FAIL_IF_KEY_EXISTS_FLAG | WTF_2);
                     if(memory_id < 0)
                         {
                             memory_id = semget(inter_process_key_id, 1, CREATE_IF_DOESNT_YET_EXIST_FLAG | WTF_2);
@@ -73,9 +63,48 @@ class SharedResourceManager
                     semop(memory_id, &sb, 1);
                 }
     };
+    
+    
+class KernelBoundedBuffer
+    {
+    public:
+        // data
+            SharedResourceManager buffer_manager;
+            queue<string> queue_of_strings;
+            int max_size = 0;
 
-#undef CREATE_IF_DOESNT_YET_EXIST_FLAG
-#undef FAIL_IF_KEY_EXISTS
-#undef REMOVE_IDENTIFIER_FLAG
-#undef WTF_1
-#undef WTF_2
+        // constructors
+            KernelBoundedBuffer();
+            KernelBoundedBuffer(int);
+            ~KernelBoundedBuffer();
+        // methods
+            void push(string);
+            string pop();
+    };
+
+KernelBoundedBuffer::KernelBoundedBuffer()
+    {
+    }
+
+KernelBoundedBuffer::KernelBoundedBuffer(int input_max_size)
+    {
+        max_size = input_max_size || 1;
+    }
+
+KernelBoundedBuffer::~KernelBoundedBuffer()
+    {
+    }
+
+void KernelBoundedBuffer::push(string string_input)
+    {
+        buffer_manager.GiveResource();
+        // FIXME push stuff here
+    }
+
+string KernelBoundedBuffer::pop()
+    {
+        buffer_manager.WaitTillResourceIsAvaliableThenTakeIt();
+        string output = "FIXME, 02940";
+        // FIXME pop stuff here
+        return output;
+    }

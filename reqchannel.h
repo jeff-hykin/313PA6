@@ -14,7 +14,17 @@ using namespace std;
 #define puts(ARGS) {stringstream converter_to_string; converter_to_string << ARGS; cout << converter_to_string.str(); }
 #endif
 
+// 
+// Contstants
+// 
 #define MAX_MESSAGE_SIZE 255
+#define CREATE_IF_DOESNT_YET_EXIST_FLAG IPC_CREAT
+#define FAIL_IF_KEY_EXISTS_FLAG IPC_EXCL
+#define REMOVE_IDENTIFIER_FLAG IPC_RMID
+// No idea what these magic numbers are
+#define WTF_1 0644
+#define WTF_2 0666
+#define WTF_3 101
 
 // helper function
 int GetInterProcessKeyUsingFile(string input_filename, int id_across_processes);
