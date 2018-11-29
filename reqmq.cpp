@@ -38,9 +38,10 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
 #define WTF_1 0644
 #define WTF_2 0666
 
-
+// basically a threadsafe cout 
+#ifndef puts
 #define puts(ARGS) {stringstream converter_to_string; converter_to_string << ARGS; cout << converter_to_string.str(); }
-
+#endif
 
 // 
 // Messenger
@@ -68,18 +69,22 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
                 message_source_id = ftok(filename.c_str(), id_across_processes);
                 if (message_source_id < 0) 
                     {
-                        cerr << "There was an error creating a Messenger() with the filename of " << filename  << "\n";
+                        puts("There was an error creating a Messenger() with the filename of " << filename  << "\n")
                         exit(1);
                     }
                 id = msgget(message_source_id, CREATE_IF_DOESNT_YET_EXIST_FLAG | WTF_1 );
                 if (id < 0)
                     {
-                        cerr << "There was an error using msgget() inside Messenger() with the filename of " << filename  << "\n";
+                        puts("There was an error using msgget() inside Messenger() with the filename of " << filename  << "\n")
                         exit(1);
                     }
             }
         Messenger::~Messenger() 
             {
+                // delete the file, TODO code this without system()
+                string system_command = "rm " + filename;
+                system(system_command.c_str());
+                // delete the id
                 msgctl(id, REMOVE_IDENTIFIER_FLAG, NULL);
                 if (has_data)
                     {
@@ -110,20 +115,6 @@ auto REMOVE_IDENTIFIER_FLAG = IPC_RMID;
                 // return the data_pointer after the changes are made
                 puts( "    " << filename << (mailbox_number == 's'? " server ":" client ") << "RECEIVED \"" << package_to_receive.data << "\"\n");
                 return package_to_receive.data;
-            }
-        void Messenger::SetDataAndMessageType(void* input_data)
-            {
-                // delete the old message data before creating a new thing
-                if (has_data)
-                    {
-                        delete message_type_and_data_pointer;
-                    }
-                int room_for_message_type = sizeof(long);
-                message_type_and_data_pointer = new char(data_size_in_bytes + room_for_message_type);
-                // data is just a few bytes down from message_type_and_data_pointer
-                data_pointer = (void*)(((long)message_type_and_data_pointer) + room_for_message_type);
-                memcpy(data_pointer, input_data, data_size_in_bytes);
-                has_data = true;
             }
 
 

@@ -41,7 +41,6 @@ struct Messenger
         // methods
             void Send(void* input_data, long input_mailbox_number);
             void* Receive();
-            void SetDataAndMessageType(void* input_data);
     };
 
 class MessageQue : public RequestChannel

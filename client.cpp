@@ -160,7 +160,6 @@ int main(int argc, char* argv[])
                                             }
                                         else
                                             {
-                                                cout << "response_of_worker = " << (response_of_worker) << "\n";
                                                 // put the data in the corrisponding stat buffer 
                                                 histogram_of_tasks.update(persons_name, response_of_worker);
                                             }
