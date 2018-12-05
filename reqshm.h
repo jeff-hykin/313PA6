@@ -19,10 +19,11 @@ struct SharedResourceManager
 
         // constructors
             SharedResourceManager();
-            SharedResourceManager(short number_of_avalible_positions, string input_filename, int input_id_across_processes);
+            SharedResourceManager(string input_filename, short number_of_avalible_positions, int input_id_across_processes);
             ~SharedResourceManager();
+        
         // methods
-            void Create(short number_of_avalible_positions, string input_filename, int input_id_across_processes);
+            void Create(string input_filename, short number_of_avalible_positions, int input_id_across_processes);
             void WaitTillResourceIsAvaliableThenTakeIt();
             void GiveResource();
     };
@@ -34,11 +35,13 @@ struct SharedMemory255
             int id_across_processes = 103; // this is an arbitrary number from what I understand
             int shared_memory_id;
             bool memory_exists = false;
-            SharedResourceManager memory_manager;
+            SharedResourceManager read_and_write;
             string filename;
+        
         // constructors 
             SharedMemory255();
             ~SharedMemory255();
+        
         // methods
             void Create(string input_filename);
             string Read();
@@ -51,9 +54,11 @@ struct SharedMemoryQue
             SharedResourceManager not_empty_manager;
             SharedResourceManager not_full_manager;
             SharedMemory255 memory;
+        
         // methods
-            void push(string);
-            string pop();
+            void Create(string);
+            void Push(string);
+            string Pop();
     };
 
 
@@ -61,11 +66,14 @@ struct SharedMemoryChannel : public RequestChannel
     {
         // Data
             string name      = "";
+            SharedMemoryQue server_que;
+            SharedMemoryQue client_que;
             RequestChannel::Side side;
 
         // Constructors
             SharedMemoryChannel(const string, const RequestChannel::Side);
             ~SharedMemoryChannel();
+        
         // Methods
             string cread();
             void   cwrite(string);

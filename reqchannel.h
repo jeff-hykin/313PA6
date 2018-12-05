@@ -11,7 +11,7 @@ using namespace std;
 // basically a threadsafe cout 
 #ifndef puts
 #include <sstream>
-#define puts(ARGS) {stringstream converter_to_string; converter_to_string << ARGS; cout << converter_to_string.str(); }
+#define puts(ARGS) {stringstream converter_to_string; converter_to_string << ARGS; cout << converter_to_string.str() << "\n"; }
 #endif
 
 // 

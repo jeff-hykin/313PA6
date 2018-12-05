@@ -1,6 +1,7 @@
 #include "reqchannel.h"
 #include "reqfifo.h"
 #include "reqmq.h"
+#include "reqshm.h"
 #include <cassert>
 #include <cstring>
 #include <errno.h>
@@ -28,7 +29,7 @@ RequestChannel* getChannel(string name)
             return new MessageQue(name, SERVER_SIDE);
         // shared memory
         } else if (ipc_option == 's') {
-            cout << "FIXME, not yet implemented" << "\n";
+            return new SharedMemoryChannel(name, SERVER_SIDE);
         }
         return nullptr;
     }

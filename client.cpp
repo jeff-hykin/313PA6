@@ -10,6 +10,7 @@
 #include "reqchannel.h"
 #include "reqfifo.h"
 #include "reqmq.h"
+#include "reqshm.h"
 #include <algorithm>
 #include <assert.h>
 #include <cassert>
@@ -43,7 +44,7 @@ RequestChannel* getChannel(char ipc_option, string name)
             return new MessageQue(name, CLIENT_SIDE);
         // shared memory
         } else if (ipc_option == 's') {
-            cout << "FIXME, not yet implemented" << "\n";
+            return new SharedMemoryChannel(name, CLIENT_SIDE);
         }
         return nullptr;
     }
@@ -60,7 +61,7 @@ int main(int argc, char* argv[])
             int number_of_requests_per_person  = 100;                                              // default number_of_requests_per_person
             int number_of_worker_threads       = 5;                                                // default number_of_worker threads
             int capacity_of_the_request_buffer = number_of_people * number_of_requests_per_person; // default capacity_of_the_request_buffer
-            char ipc_option                    = 'q';                                              // default inter process communication option
+            char ipc_option                    = 's';                                              // default inter process communication option
         // 
         // Get arguments
         // 
