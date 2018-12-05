@@ -44,7 +44,7 @@ RequestChannel* getChannel(char ipc_option, string name)
             return new MessageQue(name, CLIENT_SIDE);
         // shared memory
         } else if (ipc_option == 's') {
-            return new Fifo(name, CLIENT_SIDE);
+            return new SharedMemory(name, CLIENT_SIDE);
         }
         return nullptr;
     }
