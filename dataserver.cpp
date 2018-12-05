@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#define SharedMemory Fifo
 using namespace std;
 
 int             nchannels = 0;
@@ -28,7 +29,7 @@ RequestChannel* getChannel(string name)
             return new MessageQue(name, SERVER_SIDE);
         // shared memory
         } else if (ipc_option == 's') {
-            cout << "FIXME, not yet implemented" << "\n";
+            return new SharedMemory(name, CLIENT_SIDE);
         }
         return nullptr;
     }
