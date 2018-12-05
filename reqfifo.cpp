@@ -28,7 +28,7 @@ using namespace std;
 // 
 // Constructors
 // 
-    Fifo::Fifo(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side), 
+    Fifo::Fifo(const string input_name, const RequestChannel::Side input_side) : name(input_name), side(input_side)
         {
             // Summary:
                 // /* Creates a "local copy" of the channel specified by the given name.
