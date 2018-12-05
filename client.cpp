@@ -31,7 +31,7 @@
 #include <vector>
 #include <map>
 #include "CekoLibrary.h"
-#define SharedMemory Fifo
+#define SharedMemory(ARG1, ARG2) Fifo(ARG1, ARG2)
 using namespace std;
 
 RequestChannel* getChannel(char ipc_option, string name) 
@@ -44,7 +44,7 @@ RequestChannel* getChannel(char ipc_option, string name)
             return new MessageQue(name, CLIENT_SIDE);
         // shared memory
         } else if (ipc_option == 's') {
-            return new SharedMemory(name, CLIENT_SIDE);
+            return new Fifo(name, CLIENT_SIDE);
         }
         return nullptr;
     }

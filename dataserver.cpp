@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#define SharedMemory Fifo
+#define SharedMemory(ARG1, ARG2) Fifo(ARG1, ARG2)
 using namespace std;
 
 int             nchannels = 0;
